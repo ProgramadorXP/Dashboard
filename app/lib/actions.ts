@@ -35,11 +35,16 @@ export async function createInvoice(formData: FormData) {
   //Get the current date
   const date = new Date().toISOString().split("T")[0];
 
-  //Insert the invoice into the database
-  await sql`
+  try {
+    //Insert the invoice into the database
+    await sql`
     INSERT INTO invoices (customer_id, amount, status, date)
     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
   `;
+  } catch (error) {
+    console.error(error);
+    return { message: "Database Error: Failed to Create Invoice." };
+  }
 
   //Revalidate the invoices page
   revalidatePath("/dashboard/invoices");
@@ -58,12 +63,17 @@ export async function updateInvoice(id: string, formData: FormData) {
   //Convert amount to cents
   const amountInCents = amount * 100;
 
-  //Update the invoice in the database
-  await sql`
+  try {
+    //Update the invoice in the database
+    await sql`
     UPDATE invoices
     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
     WHERE id = ${id}
   `;
+  } catch (error) {
+    console.error(error);
+    return { message: "Database Error: Failed to Update Invoice." };
+  }
 
   //Revalidate the invoices page
   revalidatePath("/dashboard/invoices");
